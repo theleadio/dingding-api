@@ -28,10 +28,22 @@ router.get('/', function(req, res, next) {
       })
       .catch(err => {console.log('Error', err);
     });
-
-
-
 });
+
+router.get('/:id', function(req, res, next) {
+  var id = req.params.id;
+  sql.connect(config).then(pool => {
+    return pool.request()
+      .input('id', sql.VarChar, id)
+      .query('SELECT * FROM owners WHERE id = @id ')}) // .input('input_parameter', sql.Int, value)
+      .then(result => {
+        console.dir(result);
+        res.json(result.recordset);
+      })
+      .catch(err => {console.log('Error', err);
+    });
+});
+
 
 router.post('/', function(req, res,next) {
   console.log(req.body);
