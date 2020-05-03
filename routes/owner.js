@@ -44,6 +44,27 @@ router.get('/:id', function(req, res, next) {
     });
 });
 
+router.post('/checkin/:id', function(req, res) {
+  var id = req.params.id;
+  var customerName = req.body.customerName
+  var mobile = req.body.mobile;
+
+  sql.connect(config).then(pool => {
+    return pool.request()
+      .input('id', sql.VarChar, id)
+      .input('customerName', sql.VarChar, customerName)
+      .input('mobile', sql.VarChar, mobile)
+      .query('INSERT INTO CHECKINS(shopId, customerName, mobile) VALUES (@id, @customerName, @mobile)')}) // .input('input_parameter', sql.Int, value)
+      .then(result => {
+        console.log('checkin success.')
+        res.json({"status": "done", "check-in": "true"});
+      })
+      .catch(err => {
+        console.log('Error:', err);
+        res.json({"status": "error"});
+  });
+} )
+
 
 router.post('/', function(req, res,next) {
   console.log(req.body);
@@ -68,6 +89,7 @@ router.post('/', function(req, res,next) {
         res.json({"status": "error"});
     });
 })
+
 
 module.exports = router;
 
