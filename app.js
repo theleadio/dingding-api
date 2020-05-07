@@ -11,6 +11,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var apiRouter = require('./routes/api');
 var ownerRouter = require('./routes/owner');
+var visitorRouter = require('./routes/visitor');
 
 var app = express();
 
@@ -26,10 +27,30 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+const dotenv = require("dotenv").config();
+const jwt = require("express-jwt");
+
+function authenticateToken(req, res, next) {
+  // Gather the jwt access token from the request header
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
+  if (token == null) return res.sendStatus(401) // if there isn't any token
+
+  jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
+    console.log(err)
+    if (err) return res.sendStatus(403)
+    req.user = user
+    next() // pass the execution off to whatever request the client intended
+  })
+}
+
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/qr', apiRouter);
 app.use('/owner', ownerRouter);
+app.use('/visitor', jwt({ secret: process.env.TOKEN_SECRET }), visitorRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
